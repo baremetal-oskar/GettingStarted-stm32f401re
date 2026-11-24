@@ -1,0 +1,10 @@
+# Ignore All
+*
+
+# Except
+!.gitignore
+!src
+!src/**
+!ld
+!ld/**
+!Makefile
