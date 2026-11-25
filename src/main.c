@@ -4,17 +4,37 @@
 #define GPIOA_MODER	(*(volatile uint32_t *)0x40020000)
 #define GPIOA_ODR	(*(volatile uint32_t *)0x40020014)
 
+void delay(uint32_t loops);
 void Reset_Handler(void);
 
 // Vectortabelle am Anfang des Flash-Speichers (Wert1 = Top of Stack, Wert2 = Adresse der Funktion Reset_Handler)
 __attribute__((section(".isr_vector"))) const uint32_t vectorTable[2] = { 0x20018000, (uint32_t)(uintptr_t)&Reset_Handler };
 
+void delay(uint32_t cycles)
+{
+	/*
+	 * Berechnung für ein delay von 0,5 s
+	 *
+	 * 16 MHz --> T = 62,5 ns
+	 * 10 Takte pro Schleifendurchlauf
+	 *
+	 * n = t / T / 10
+	 * n = 0,5 s / 62,5 ns / 10
+	 * n = 8.000.000 / 10
+	 * n = 1142857
+	 */
+	
+	volatile uint32_t counter = 0;
+	uint32_t loops = cycles / 10;
 
+	while (counter < loops)
+	{
+		counter++;
+	}
+}
 
 void Reset_Handler(void)
 {
-	volatile uint32_t counter = 0;
-
 	// Takt für GPIOA einschalten
 	RCC_AHB1ENR |= (1U << 0);
 
@@ -31,7 +51,11 @@ void Reset_Handler(void)
 
 	while(1)
 	{
-		counter++;
+
+		// PA5 umschalten
+		GPIOA_ODR ^= (1U << pin);
+		
+		delay(8000000); // delay von 0,5 s
 	}
 }
 
